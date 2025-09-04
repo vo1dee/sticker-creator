@@ -22,7 +22,7 @@ import sys
 import time
 import io
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageFilter, ImageDraw, ImageMath
 import rembg
 try:
     from watchdog.observers import Observer
@@ -64,6 +64,32 @@ def create_square_image(img, size=512):
     
     return square_img
 
+def add_white_outline(img, outline_width=6):
+    """
+    Add a subtle beige-brown-gray outline around non-transparent pixels.
+    outline_width in pixels (0.5mm ≈ 6px at 300 DPI)
+    """
+    if img.mode != 'RGBA':
+        return img
+
+    # Get the alpha channel
+    alpha = img.split()[-1]
+
+    # Expand the alpha channel to create the outline area
+    expanded_alpha = alpha.filter(ImageFilter.MaxFilter(outline_width * 2 + 1))
+
+    # Create outline mask: expanded area minus original area
+    outline_mask = ImageMath.unsafe_eval("max(a - b, 0)", a=expanded_alpha, b=alpha).convert('L')
+
+    # Create subtle beige-brown-gray outline image
+    outline_color = (235, 225, 215, 255)  # Subtle beige-brown-gray pastel
+    outline_img = Image.new('RGBA', img.size, outline_color)
+
+    # Composite: outline where mask is set, original image elsewhere
+    result = Image.composite(outline_img, img, outline_mask)
+
+    return result
+
 def process_image(input_path, output_path, old_path):
     """
     Process a single image: remove background and resize to 512x512
@@ -103,6 +129,9 @@ def process_image(input_path, output_path, old_path):
 
         # Resize to 512x512 square
         square_img = create_square_image(img, 512)
+
+        # Add subtle beige-brown-gray outline
+        square_img = add_white_outline(square_img, 6)  # 6px ≈ 0.5mm at 300 DPI
 
         # Save the processed image
         square_img.save(output_path, 'PNG', optimize=True)
