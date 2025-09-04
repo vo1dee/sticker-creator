@@ -117,3 +117,5 @@ dmypy.json
 processed/
 old/
 new/
+uploads/
+web_processed/

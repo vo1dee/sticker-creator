@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Complete - Sticker Processing Tool{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h2 class="card-title text-success">Processing Complete!</h2>
+                    <p class="text-muted">Your {{ processed_count }} image{{ 's' if processed_count != 1 else '' }} have been successfully processed</p>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-images fa-2x text-primary mb-2"></i>
+                            <h4 class="mb-1">{{ processed_count }}</h4>
+                            <small class="text-muted">Images Processed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-cut fa-2x text-success mb-2"></i>
+                            <h4 class="mb-1">✓</h4>
+                            <small class="text-muted">Background Removed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-light rounded">
+                            <i class="fas fa-brush fa-2x text-warning mb-2"></i>
+                            <h4 class="mb-1">✓</h4>
+                            <small class="text-muted">Outline Added</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>What's included:</strong> Each image has been processed with AI background removal,
+                    resized to 512x512 pixels, and given a subtle beige-brown-gray outline for perfect sticker quality.
+                </div>
+
+                <div class="mb-4">
+                    <a href="{{ url_for('download_zip', session_id=session_id, filename=zip_filename) }}"
+                       class="btn btn-success btn-lg me-3">
+                        <i class="fas fa-download me-2"></i>Download ZIP Archive
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i>Process More Images
+                    </a>
+                </div>
+
+                <div class="text-muted">
+                    <small>
+                        <i class="fas fa-clock me-1"></i>
+                        Archive will be available for download for the next 24 hours
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-file-archive fa-2x text-primary mb-3"></i>
+                            <h6>ZIP Archive</h6>
+                            <p class="text-muted small">All processed images in high-quality PNG format</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-sticker-mule fa-2x text-success mb-3"></i>
+                            <h6>Ready to Print</h6>
+                            <p class="text-muted small">Perfect for sticker printing at 300 DPI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

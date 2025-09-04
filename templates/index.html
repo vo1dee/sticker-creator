@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Images - Sticker Processing Tool{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                    <h2 class="card-title">Upload Your Images</h2>
+                    <p class="text-muted">Transform your photos into beautiful stickers with automatic background removal and subtle outlines</p>
+                </div>
+
+                <form id="uploadForm" action="{{ url_for('upload_files') }}" method="post" enctype="multipart/form-data">
+                    <div class="upload-area mb-4" id="uploadArea">
+                        <i class="fas fa-images fa-2x text-muted mb-3"></i>
+                        <h5>Drag & Drop Images Here</h5>
+                        <p class="text-muted">or click to browse files</p>
+                        <input type="file" id="fileInput" name="files" multiple accept="image/*" style="display: none;">
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-folder-open me-2"></i>Choose Files
+                        </button>
+                    </div>
+
+                    <div id="fileList" class="file-list mb-4" style="display: none;">
+                        <h6>Selected Files:</h6>
+                        <div id="fileItems"></div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" id="uploadBtn" class="btn btn-primary btn-lg" disabled>
+                            <i class="fas fa-magic me-2"></i>Process Images
+                        </button>
+                    </div>
+                </form>
+
+                <div class="row mt-4 text-center">
+                    <div class="col-md-4">
+                        <i class="fas fa-cut fa-2x text-success mb-2"></i>
+                        <h6>Background Removal</h6>
+                        <small class="text-muted">AI-powered background removal</small>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-expand fa-2x text-info mb-2"></i>
+                        <h6>Auto Resize</h6>
+                        <small class="text-muted">Optimized to 512x512 pixels</small>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="fas fa-brush fa-2x text-warning mb-2"></i>
+                        <h6>Subtle Outline</h6>
+                        <small class="text-muted">Beige-brown-gray border</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedFiles = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadForm = document.getElementById('uploadForm');
+
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        uploadArea.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        uploadArea.classList.remove('dragover');
+    }
+
+    uploadArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        selectedFiles = Array.from(files);
+        updateFileList();
+        uploadBtn.disabled = selectedFiles.length === 0;
+    }
+
+    function updateFileList() {
+        fileItems.innerHTML = '';
+        if (selectedFiles.length > 0) {
+            fileList.style.display = 'block';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span><i class="fas fa-file-image me-2"></i>${file.name}</span>
+                    <span class="text-muted">${formatFileSize(file.size)}</span>
+                `;
+                fileItems.appendChild(fileItem);
+            });
+        } else {
+            fileList.style.display = 'none';
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Form submission with progress
+    uploadForm.addEventListener('submit', function(e) {
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        uploadBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}
