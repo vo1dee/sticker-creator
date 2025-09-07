@@ -185,9 +185,10 @@ def upload_files():
                 zipf.write(file_path, processed_file)
 
         return render_template('results.html',
-                             session_id=session_id,
-                             processed_count=len(processed_files),
-                             zip_filename=zip_path.name)
+                              session_id=session_id,
+                              processed_count=len(processed_files),
+                              processed_files=processed_files,
+                              zip_filename=zip_path.name)
     else:
         flash('No files were successfully processed')
         return redirect(url_for('index'))
@@ -202,6 +203,27 @@ def download_zip(session_id, filename):
     else:
         flash('File not found')
         return redirect(url_for('index'))
+
+@app.route('/download/<session_id>/file/<filename>')
+def download_file(session_id, filename):
+    """Download individual processed image file"""
+    file_path = Path(PROCESSED_FOLDER) / session_id / filename
+
+    if file_path.exists():
+        return send_file(file_path, as_attachment=True, download_name=filename)
+    else:
+        flash('File not found')
+        return redirect(url_for('index'))
+
+@app.route('/preview/<session_id>/file/<filename>')
+def preview_file(session_id, filename):
+    """Preview individual processed image file (for display in browser)"""
+    file_path = Path(PROCESSED_FOLDER) / session_id / filename
+
+    if file_path.exists():
+        return send_file(file_path, as_attachment=False)
+    else:
+        return "File not found", 404
 
 if __name__ == '__main__':
     print("🚀 Starting Sticker Processing Web App...")
