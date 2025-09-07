@@ -8,3 +8,4 @@ pathlib
 gunicorn
 python-dotenv
 requests
+python-json-logger

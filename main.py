@@ -30,6 +30,9 @@ try:
 except ImportError:
     pass  # Will be checked later
 
+# Import logging configuration
+from logging_config import main_logger, processing_logger, log_performance
+
 def create_square_image(img, size=512):
     """
     Resize image to square while maintaining aspect ratio and centering.
@@ -90,19 +93,26 @@ def add_white_outline(img, outline_width=6):
 
     return result
 
+@log_performance(processing_logger)
 def process_image(input_path, output_path, old_path):
     """
     Process a single image: remove background and resize to 512x512
     """
     try:
-        print(f"Processing: {input_path.name}")
+        processing_logger.info("Starting image processing", extra={
+            'input_file': str(input_path.name),
+            'output_file': str(output_path.name)
+        })
 
         # First, validate the input image
         try:
             with Image.open(input_path) as test_img:
                 test_img.verify()  # Verify the image is not corrupted
         except Exception as e:
-            print(f"✗ Invalid input image {input_path.name}: {str(e)}")
+            processing_logger.error("Invalid input image", extra={
+                'input_file': str(input_path.name),
+                'error': str(e)
+            })
             return
 
         # Read the input image
@@ -113,13 +123,18 @@ def process_image(input_path, output_path, old_path):
         try:
             output_data = rembg.remove(input_data)
             if isinstance(output_data, bytes) and len(output_data) > 100:  # Basic validation
-                print(f"✓ Background removal completed for {input_path.name}")
+                processing_logger.info("Background removal completed", extra={
+                    'input_file': str(input_path.name),
+                    'output_size': len(output_data)
+                })
                 img = Image.open(io.BytesIO(output_data))
             else:
                 raise ValueError("Invalid rembg output")
         except Exception as e:
-            print(f"⚠ Background removal failed for {input_path.name}: {str(e)}")
-            print("   Falling back to original image processing...")
+            processing_logger.warning("Background removal failed, using fallback", extra={
+                'input_file': str(input_path.name),
+                'error': str(e)
+            })
             # Fallback: use original image
             img = Image.open(input_path)
 
@@ -135,17 +150,25 @@ def process_image(input_path, output_path, old_path):
 
         # Save the processed image
         square_img.save(output_path, 'PNG', optimize=True)
-        print(f"✓ Saved processed: {output_path.name}")
+        processing_logger.info("Image processing completed", extra={
+            'input_file': str(input_path.name),
+            'output_file': str(output_path.name),
+            'output_size': output_path.stat().st_size if output_path.exists() else 0
+        })
 
         # Move original to old folder
         if isinstance(old_path, Path):
             input_path.rename(old_path)
-            print(f"✓ Moved original to: {old_path.name}")
-        else:
-            print(f"✗ Failed to move {input_path.name}: invalid path")
+            processing_logger.debug("Original file moved", extra={
+                'original_path': str(old_path)
+            })
 
     except Exception as e:
-        print(f"✗ Error processing {input_path.name}: {str(e)}")
+        processing_logger.error("Image processing failed", extra={
+            'input_file': str(input_path.name),
+            'output_file': str(output_path.name),
+            'error': str(e)
+        }, exc_info=True)
 
 class ImageHandler(FileSystemEventHandler):
     def __init__(self, new_folder, processed_folder, old_folder):
@@ -158,7 +181,7 @@ class ImageHandler(FileSystemEventHandler):
         if not event.is_directory:
             file_path = Path(event.src_path)
             if file_path.suffix.lower() in self.supported_formats:
-                print(f"New image detected: {file_path.name}")
+                main_logger.info("New image detected: %s", file_path.name)
                 self.process_file(file_path)
 
     def process_file(self, input_path):
@@ -189,46 +212,38 @@ def main():
     processed_folder.mkdir(exist_ok=True)
     old_folder.mkdir(exist_ok=True)
 
-    print("Monitoring 'new' folder for new images...")
-    print(f"Processed images will be saved to: {processed_folder}")
-    print(f"Original images will be moved to: {old_folder}")
-    print("Press Ctrl+C to stop.")
-
-    # Process any existing files in the new folder first
+    main_logger.info("Monitoring 'new' folder for new images...")
+    main_logger.info("Processed images will be saved to: %s", processed_folder)
+    main_logger.info("Original images will be moved to: %s", old_folder)
+    main_logger.info("Press Ctrl+C to stop.")
+    # Create event handler instance
     event_handler = ImageHandler(new_folder, processed_folder, old_folder)
-    print("Processing existing files in 'new' folder...")
+
+    main_logger.info("Processing existing files in 'new' folder...")
     for file_path in new_folder.iterdir():
         if file_path.is_file() and file_path.suffix.lower() in event_handler.supported_formats:
-            print(f"Found existing image: {file_path.name}")
+            main_logger.info("Found existing image: %s", file_path.name)
             event_handler.process_file(file_path)
-    print("Finished processing existing files.")
+    main_logger.info("Finished processing existing files.")
 
-    # Set up the observer
-    observer = Observer()
-    observer.schedule(event_handler, str(new_folder), recursive=False)
-    observer.start()
-
+    # Check if watchdog is available
     try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-        print("\nMonitoring stopped.")
-    observer.join()
+        observer = Observer()
+        observer.schedule(event_handler, str(new_folder), recursive=False)
+        observer.start()
+        main_logger.info("File monitoring started. Press Ctrl+C to stop.")
 
-if __name__ == "__main__":
-    # Import io here to avoid import error if not needed
-    import io
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+            main_logger.info("Monitoring stopped by user.")
+        observer.join()
 
-    # Check if required packages are installed
-    try:
-        import rembg
-        from PIL import Image
-        from watchdog.observers import Observer
-        from watchdog.events import FileSystemEventHandler
-    except ImportError as e:
-        print("Error: Required packages not installed.")
-        print("Please run: pip install rembg pillow watchdog")
+    except NameError:
+        main_logger.error("Required packages not installed.")
+        main_logger.error("Please run: pip install rembg pillow watchdog")
         sys.exit(1)
 
     main()

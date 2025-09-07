@@ -8,12 +8,15 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./web_processed:/app/web_processed
+      - ./logs:/app/logs
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=sticker-processing-production-secret-key-2024
       - NUMBA_DISABLE_JIT=1
       - OMP_NUM_THREADS=1
       - MKL_NUM_THREADS=1
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
     # user: "1000:1000"  # Commented out - will be set dynamically
     restart: unless-stopped
     healthcheck:

@@ -7,6 +7,14 @@
 - **Type check**: `python -m mypy main.py` (if mypy installed)
 - **Test single function**: `python -c "from main import create_square_image; print('Function works')"`
 
+## Logging Commands
+- **View application logs**: `tail -f logs/app.log`
+- **View error logs**: `tail -f logs/error.log`
+- **View processing logs**: `tail -f logs/processing.log`
+- **View access logs**: `tail -f logs/access.log`
+- **Check log files**: `ls -la logs/`
+- **Docker container logs**: `docker-compose logs -f sticker-processor`
+
 ## Project Files
 - `requirements.txt` - All Python dependencies
 - `README.md` - Project documentation and usage instructions

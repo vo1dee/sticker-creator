@@ -119,3 +119,5 @@ old/
 new/
 uploads/
 web_processed/
+# Keep logs directory (log files are managed by rotation)
+# logs/
