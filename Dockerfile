@@ -39,11 +39,8 @@ COPY .env ./
 # Create necessary directories
 RUN mkdir -p uploads web_processed
 
-# Create non-root user for security
-RUN useradd --create-home --shell /bin/bash app \
-    && chown -R app:app /app \
-    && chown -R app:app uploads web_processed
-USER app
+# Note: Container will run as host user (1000:1000) via docker-compose.yml
+# This ensures proper permissions for mounted volumes
 
 # Expose port (Gunicorn default)
 EXPOSE 8000

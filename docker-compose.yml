@@ -11,6 +11,7 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=sticker-processing-production-secret-key-2024
+    user: "1000:1000"  # Run as host user (vo1dee) to match volume permissions
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
