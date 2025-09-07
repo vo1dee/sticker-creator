@@ -11,6 +11,8 @@ services:
     environment:
       - FLASK_ENV=production
       - SECRET_KEY=sticker-processing-production-secret-key-2024
+      - NUMBA_CACHE_DIR=/tmp/numba_cache
+      - NUMBA_DEBUG_CACHE=1
     user: "1000:1000"  # Run as host user (vo1dee) to match volume permissions
     restart: unless-stopped
     healthcheck:

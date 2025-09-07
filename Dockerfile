@@ -37,7 +37,7 @@ COPY templates/ ./templates/
 COPY .env ./
 
 # Create necessary directories
-RUN mkdir -p uploads web_processed
+RUN mkdir -p uploads web_processed /tmp/numba_cache
 
 # Note: Container will run as host user (1000:1000) via docker-compose.yml
 # This ensures proper permissions for mounted volumes
