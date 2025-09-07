@@ -145,7 +145,7 @@ def upload_files():
     processed_files = []
 
     for file in files:
-        if file and allowed_file(file.filename):
+        if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
 
             # Check file size (max 10MB per file)
