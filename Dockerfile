@@ -34,6 +34,8 @@ RUN pip install gunicorn
 COPY app.py main.py ./
 COPY templates/ ./templates/
 
+COPY .env ./
+
 # Create necessary directories
 RUN mkdir -p uploads web_processed
 
