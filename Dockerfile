@@ -41,7 +41,8 @@ RUN mkdir -p uploads web_processed
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app \
-    && chown -R app:app /app
+    && chown -R app:app /app \
+    && chown -R app:app uploads web_processed
 USER app
 
 # Expose port (Gunicorn default)

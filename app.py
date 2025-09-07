@@ -61,7 +61,7 @@ def index():
 @app.route('/health')
 def health():
     """Health check endpoint for monitoring"""
-    return {'status': 'healthy', 'service': 'sticker-processor', 'version': '1.1.0'}
+    return {'status': 'healthy', 'service': 'sticker-processor', 'version': '1.1.1'}
 
 @app.route('/api/feedback', methods=['POST'])
 def send_feedback():
