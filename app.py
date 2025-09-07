@@ -24,6 +24,9 @@ import sys
 from dotenv import load_dotenv
 import requests
 
+# Ensure current directory is in Python path
+sys.path.insert(0, os.path.dirname(__file__))
+
 # Import logging configuration
 from logging_config import app_logger, access_logger, log_request, log_performance, get_logger
 

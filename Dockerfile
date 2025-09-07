@@ -31,10 +31,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
 
 # Copy application files
-COPY app.py main.py ./
+COPY app.py main.py logging_config.py ./
 COPY templates/ ./templates/
+COPY static/ ./static/
 
-COPY .env ./
+COPY .env.example ./.env
 
 # Create necessary directories
 RUN mkdir -p uploads web_processed logs /tmp/numba_cache
@@ -52,6 +53,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Set environment variables
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
 
 # Run with Gunicorn (production WSGI server)
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "app:app"]
