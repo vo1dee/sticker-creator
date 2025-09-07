@@ -1,15 +1,15 @@
-# Use Ubuntu 22.04 with Python 3.9
+# Use Ubuntu 22.04 with Python 3.10 (default)
 FROM ubuntu:22.04
 
-# Install Python and pip
+# Install Python and pip (Python 3.10 is default in Ubuntu 22.04)
 RUN apt-get update && apt-get install -y \
-    python3.9 \
-    python3.9-pip \
-    python3.9-dev \
+    python3 \
+    python3-pip \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create symlink for python
-RUN ln -s /usr/bin/python3.9 /usr/bin/python
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Set working directory
 WORKDIR /app
