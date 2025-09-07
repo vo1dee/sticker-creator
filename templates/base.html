@@ -214,6 +214,17 @@
             }
         }, 3000);
     }
+
+    // Prevent conflicts with file uploads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure download links don't interfere with file inputs
+        const downloadLinks = document.querySelectorAll('a[href*="download"]');
+        downloadLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
     </script>
 
     {% block scripts %}{% endblock %}
