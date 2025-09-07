@@ -88,11 +88,22 @@ def send_feedback():
 
         # Send to Telegram
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {
-            'chat_id': TELEGRAM_CHANNEL_ID,
-            'text': telegram_message,
-            'parse_mode': 'Markdown'
-        }
+
+        # Handle topic IDs (format: chat_id:topic_id)
+        if ':' in TELEGRAM_CHANNEL_ID:
+            chat_id, topic_id = TELEGRAM_CHANNEL_ID.split(':', 1)
+            payload = {
+                'chat_id': chat_id,
+                'message_thread_id': int(topic_id),
+                'text': telegram_message,
+                'parse_mode': 'Markdown'
+            }
+        else:
+            payload = {
+                'chat_id': TELEGRAM_CHANNEL_ID,
+                'text': telegram_message,
+                'parse_mode': 'Markdown'
+            }
 
         response = requests.post(url, json=payload, timeout=10)
 
