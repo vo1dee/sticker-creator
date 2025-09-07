@@ -1,5 +1,15 @@
-# Use Python 3.9 slim image
-FROM python:3.9-slim
+# Use Ubuntu 22.04 with Python 3.9
+FROM ubuntu:22.04
+
+# Install Python and pip
+RUN apt-get update && apt-get install -y \
+    python3.9 \
+    python3.9-pip \
+    python3.9-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create symlink for python
+RUN ln -s /usr/bin/python3.9 /usr/bin/python
 
 # Set working directory
 WORKDIR /app
