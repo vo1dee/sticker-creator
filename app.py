@@ -194,7 +194,10 @@ def download_zip(session_id, filename):
 
 if __name__ == '__main__':
     print("🚀 Starting Sticker Processing Web App...")
-    print("📱 Visit http://localhost:5000 in your browser")
+    print("📱 Local access: http://localhost:5000")
+    print("🌐 Docker access: http://localhost:5001")
     print("📁 Upload folder:", UPLOAD_FOLDER)
     print("📦 Processed folder:", PROCESSED_FOLDER)
+    print("💬 Feedback widget available in bottom-right corner")
+    print("🔗 Health check: http://localhost:5000/health")
     app.run(debug=True, host='0.0.0.0', port=5000)
