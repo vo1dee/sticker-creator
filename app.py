@@ -203,7 +203,7 @@ def upload_files():
 
             if file_size > 10 * 1024 * 1024:  # 10MB
                 app_logger.warning("File too large", extra={
-                    'filename': filename,
+                    'file_name': filename,
                     'file_size': file_size,
                     'max_size': 10 * 1024 * 1024,
                     'session_id': session_id
@@ -223,7 +223,7 @@ def upload_files():
                 processed_files.append(processed_path.name)
 
                 app_logger.info("File processed successfully", extra={
-                    'filename': filename,
+                    'file_name': filename,
                     'session_id': session_id,
                     'file_size': file_size
                 })
@@ -231,14 +231,14 @@ def upload_files():
             except Exception as e:
                 error_msg = f'Error processing {filename}: {str(e)}'
                 app_logger.error("File processing failed", extra={
-                    'filename': filename,
+                    'file_name': filename,
                     'session_id': session_id,
                     'error': str(e)
                 }, exc_info=True)
                 flash(error_msg, 'error')
         else:
             app_logger.warning("Invalid file type", extra={
-                'filename': getattr(file, 'filename', 'unknown'),
+                'file_name': getattr(file, 'filename', 'unknown'),
                 'session_id': session_id
             })
             flash(f'Invalid file type: {file.filename}', 'error')
