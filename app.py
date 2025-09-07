@@ -49,6 +49,11 @@ def index():
     """Main page with upload form"""
     return render_template('index.html')
 
+@app.route('/health')
+def health():
+    """Health check endpoint for monitoring"""
+    return {'status': 'healthy', 'service': 'sticker-processor', 'version': '1.0.0'}
+
 @app.route('/upload', methods=['POST'])
 def upload_files():
     """Handle file uploads and processing"""

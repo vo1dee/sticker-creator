@@ -5,3 +5,4 @@ onnxruntime
 flask
 werkzeug
 pathlib
+gunicorn

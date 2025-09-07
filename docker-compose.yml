@@ -4,15 +4,23 @@ services:
   sticker-processor:
     build: .
     ports:
-      - "5001:5000"
+      - "5001:8000"  # External:Internal (Gunicorn runs on 8000)
     volumes:
       - ./uploads:/app/uploads
       - ./web_processed:/app/web_processed
     environment:
       - FLASK_ENV=production
+      - SECRET_KEY=sticker-processing-production-secret-key-2024
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
