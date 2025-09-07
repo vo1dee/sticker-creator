@@ -69,6 +69,79 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+
+        /* Feedback Widget Styles */
+        .feedback-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .feedback-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+
+        .feedback-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .feedback-form {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+
+        .feedback-form.show {
+            display: block;
+        }
+
+        .feedback-form textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .feedback-form select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        .feedback-form button {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .feedback-form button:hover {
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -98,5 +171,87 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}
+
+    <!-- Feedback Widget -->
+    <div class="feedback-widget">
+        <div class="feedback-form" id="feedbackForm">
+            <h6 style="margin-bottom: 15px; color: #333;"><i class="fas fa-comments me-2"></i>Send Feedback</h6>
+            <form id="feedbackFormData">
+                <select id="feedbackType" required>
+                    <option value="">Select type...</option>
+                    <option value="bug">🐛 Bug Report</option>
+                    <option value="idea">💡 Feature Idea</option>
+                    <option value="feedback">📝 General Feedback</option>
+                </select>
+                <textarea id="feedbackMessage" placeholder="Tell us what's on your mind..." required></textarea>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button type="button" onclick="closeFeedback()" style="background: #6c757d; color: white; margin-right: 8px;">Cancel</button>
+                    <button type="submit" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white;">Send</button>
+                </div>
+            </form>
+        </div>
+        <button class="feedback-button" id="feedbackButton" onclick="toggleFeedback()" title="Send Feedback">
+            💬
+        </button>
+    </div>
+
+    <script>
+    function toggleFeedback() {
+        const form = document.getElementById('feedbackForm');
+        form.classList.toggle('show');
+    }
+
+    function closeFeedback() {
+        const form = document.getElementById('feedbackForm');
+        form.classList.remove('show');
+    }
+
+    document.getElementById('feedbackFormData').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const type = document.getElementById('feedbackType').value;
+        const message = document.getElementById('feedbackMessage').value;
+
+        if (!type || !message.trim()) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Sending...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    message: message.trim()
+                })
+            });
+
+            if (response.ok) {
+                alert('Thank you for your feedback!');
+                document.getElementById('feedbackFormData').reset();
+                closeFeedback();
+            } else {
+                const errorData = await response.json();
+                alert('Failed to send feedback: ' + (errorData.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error sending feedback:', error);
+            alert('Network error. Please try again.');
+        } finally {
+            // Reset button state
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    </script>
 </body>
 </html>

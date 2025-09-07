@@ -18,9 +18,11 @@ import uuid
 import zipfile
 import tempfile
 from pathlib import Path
-from flask import Flask, request, render_template, send_file, flash, redirect, url_for
+from flask import Flask, request, render_template, send_file, flash, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 import sys
+from dotenv import load_dotenv
+import requests
 
 # Import our existing image processing functions
 from main import process_image, create_square_image, add_white_outline
@@ -30,11 +32,18 @@ UPLOAD_FOLDER = 'uploads'
 PROCESSED_FOLDER = 'web_processed'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'webp'}
 
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['PROCESSED_FOLDER'] = PROCESSED_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
-app.secret_key = 'sticker-processing-secret-key'
+app.secret_key = os.getenv('SECRET_KEY', 'sticker-processing-secret-key')
+
+# Telegram configuration
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHANNEL_ID = os.getenv('TELEGRAM_CHANNEL_ID')
 
 # Create necessary directories
 Path(UPLOAD_FOLDER).mkdir(exist_ok=True)
@@ -53,6 +62,48 @@ def index():
 def health():
     """Health check endpoint for monitoring"""
     return {'status': 'healthy', 'service': 'sticker-processor', 'version': '1.0.0'}
+
+@app.route('/api/feedback', methods=['POST'])
+def send_feedback():
+    """Send feedback to Telegram channel"""
+    try:
+        data = request.get_json()
+
+        if not data or 'type' not in data or 'message' not in data:
+            return jsonify({'error': 'Invalid data'}), 400
+
+        feedback_type = data['type']
+        message = data['message']
+
+        if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHANNEL_ID:
+            return jsonify({'error': 'Telegram not configured'}), 500
+
+        # Format message for Telegram
+        telegram_message = f"""📬 *New Feedback*
+
+*Type:* {feedback_type.upper()}
+*Message:* {message}
+
+*From:* Sticker Processing Tool v1.0.0"""
+
+        # Send to Telegram
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            'chat_id': TELEGRAM_CHANNEL_ID,
+            'text': telegram_message,
+            'parse_mode': 'Markdown'
+        }
+
+        response = requests.post(url, json=payload, timeout=10)
+
+        if response.status_code == 200:
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'error': 'Failed to send to Telegram'}), 500
+
+    except Exception as e:
+        print(f"Feedback error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload_files():

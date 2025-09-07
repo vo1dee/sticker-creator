@@ -6,3 +6,5 @@ flask
 werkzeug
 pathlib
 gunicorn
+python-dotenv
+requests
