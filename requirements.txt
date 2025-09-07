@@ -1,5 +1,7 @@
-rembg
+rembg[cli]
 pillow
 watchdog
 onnxruntime
 flask
+werkzeug
+pathlib
