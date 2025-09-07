@@ -12,6 +12,8 @@ services:
       - FLASK_ENV=production
       - SECRET_KEY=sticker-processing-production-secret-key-2024
       - NUMBA_DISABLE_JIT=1
+      - OMP_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
     # user: "1000:1000"  # Commented out - will be set dynamically
     restart: unless-stopped
     healthcheck:
