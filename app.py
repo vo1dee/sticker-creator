@@ -69,7 +69,7 @@ def health():
     """Health check endpoint for monitoring"""
     return {'status': 'healthy', 'service': 'sticker-processor', 'version': '1.1.7'}
 
-@app.route('/api/feedback', methods=['POST'])
+@app.route('/api/feedback', methods=['POST'], endpoint='send_feedback')
 @log_request(access_logger)
 def send_feedback():
     """Send feedback to Telegram channel"""
@@ -140,7 +140,7 @@ def send_feedback():
         }, exc_info=True)
         return jsonify({'error': 'Internal server error'}), 500
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['POST'], endpoint='upload_files')
 @log_request(access_logger)
 @log_performance(app_logger)
 def upload_files():
